@@ -1,14 +1,5 @@
 <template>
-  <div class="app-wrap">
-    <aside class="leftbar">
-      <div class="brand">OPEX APP</div>
-      <router-link to="/dashboard"><button>Dashboard</button></router-link>
-      <router-link to="/projects"><button>Projects</button></router-link>
-      <router-link to="/payment_requests"><button>Payment Requests</button></router-link>
-      <router-link to="/reports"><button>Reports</button></router-link>
-      <router-link to="/admin"><button>Admin</button></router-link>
-    </aside>
-
+  <div>
     <main class="content">
       <router-view />
     </main>
@@ -17,4 +8,14 @@
 
 <script setup></script>
 
-<style scoped></style>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  
+}
+
+.content {
+    height: 100vh;
+}
+</style>

@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <header class="dash-header">
-      <h2>Approver Dashboard</h2>
+      <h2>Dashboard</h2>
       <p class="subtitle">Overview of budgets and requests</p>
     </header>
 
@@ -16,7 +16,7 @@
       <div class="chart-card">
         <h3>Budget Usage</h3>
         <!-- lightweight SVG bar chart placeholder -->
-        <!-- <svg class="bar-chart" viewBox="0 0 100 30" preserveAspectRatio="none">
+        <svg class="bar-chart" viewBox="0 0 100 30" preserveAspectRatio="none">
           <rect
             v-for="(v, i) in chartData"
             :key="i"
@@ -26,7 +26,7 @@
             :height="v"
             fill="#0b74de"
           />
-        </svg> -->
+        </svg>
       </div>
 
       <div class="list-card">
@@ -75,6 +75,7 @@ const recent = ref([
 <style scoped>
 .dashboard {
   padding: 20px;
+  /* background-color: #c7bfbf; */
 }
 .dash-header h2 {
   margin: 0;

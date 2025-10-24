@@ -14,6 +14,7 @@
       >
         <option value="USD">USD ($)</option>
         <option value="GHS">GHS (₵)</option>
+        
       </select>
     </div>
 

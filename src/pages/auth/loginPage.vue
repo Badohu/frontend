@@ -39,8 +39,19 @@
           <button type="submit" class="SignIn">Sign In</button>
           <button type="reset" class="Reset">Reset</button>
         </div>
-        <input type="checkbox" name="Remember Me" class="Check" Remember Me />
-        Remember Me
+
+        <input
+          type="checkbox"
+          name="Remember Me"
+          class="Check"
+          id="rememberMe"
+        />
+        <label for="rememberMe">Remember Me</label>
+
+        <!-- simple error message -->
+        <div v-if="error" style="color: #b91c1c; margin-top: 12px">
+          {{ error }}
+        </div>
       </form>
     </div>
   </div>
@@ -158,24 +169,35 @@ input[type="password"] {
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { login as authLogin } from "@/services/auth.js";
+
 const router = useRouter();
 
 const username = ref("");
 const password = ref("");
+const error = ref("");
 
-function handleSubmit() {
-  // replace with real auth call
-  console.log("submit", { username: username.value, password: password.value });
+async function handleSubmit() {
+  error.value = "";
+  try {
+    const user = await authLogin(username.value, password.value);
 
-  // todo: implement backend
-  //   alert('Demo: sign in attempted');
+    // store user info for other pages to check allowedSections
+    // In production use secure storage and server-issued token
+    localStorage.setItem("user", JSON.stringify(user));
 
-  router.push({ name: "Dashboard" });
+    // navigate to the main dashboard; other pages/components should read localStorage.user.allowedSections
+    router.push({ name: "Overview" });
+  } catch (err) {
+    error.value = err.message || "Login failed";
+    console.warn("login failed", err);
+  }
 }
 
 function handleReset() {
   username.value = "";
   password.value = "";
+  error.value = "";
   console.log("form reset");
 }
 

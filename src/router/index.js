@@ -4,15 +4,13 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import DashboardView from "@/views/dashboardView.vue";
 import usersPage from "@/pages/dashboard/usersPage.vue";
-// import budgetsPage from "@/pages/dashboard/budgetsPage.vue";
+import budgetsPage from "@/pages/dashboard/budgetsPage.vue";
+import OverviewPage from "@/pages/dashboard/overviewPage.vue";
 import paymentRequestsPage from "@/pages/dashboard/paymentRequestsPage.vue";
-import projectsPage from "@/pages/dashboard/projectsPage.vue";
+import ProjectsPage from "@/pages/dashboard/projectsPage.vue";
 import LoginPage from "@/pages/auth/loginPage.vue";
 import AuthView from "@/views/authvView.vue";
 import departmentPage from "@/pages/dashboard/departmentPage.vue";
-import OverviewPage from "@/pages/dashboard/overviewPage.vue";
-import approvalwWorkflowPage from "@/pages/dashboard/approvalwWorkflowPage.vue";
-// import notificationPage from "@/pages/dashboard/notificationPage.vue";
 
 const routes = [
   {
@@ -32,24 +30,24 @@ const routes = [
     path: "/dashboard",
     name: "Dashboard",
     component: DashboardView,
+    meta: { requiresAuth: true },
     children: [
       {
-        path: "",
+        path: "Overview",
         name: "Overview",
         component: OverviewPage,
       },
 
       {
         path: "users",
-        name: "Users",
+        name: "users",
         component: usersPage,
       },
 
-      { path: "department", name: "Department", component: departmentPage },
+      { path: "department", name: "department", component: departmentPage },
 
-      { path: "projects", name: "Projects", component: projectsPage },
-
-      // { path: "budgets", name: "Budgets", component: budgetsPage },
+      { path: "projects", name: "Projects", component: ProjectsPage },
+      // { path: "projects", name: "Projects", component: ProjectsPage },
 
       {
         path: "payments-requests",
@@ -58,15 +56,10 @@ const routes = [
       },
 
       {
-        path: "approval-workflow",
-        name: "ApprovalWorkflow",
-        component: approvalwWorkflowPage,
+        path: "budgets",
+        name: "Budgets",
+        component: budgetsPage,
       },
-      // {
-      //   path: "notifications",
-      //   name: "Notifications",
-      //   component: notificationPage,
-      // },
     ],
   },
 ];
@@ -74,6 +67,32 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (!user) {
+      next({ name: "Login" });
+    } else {
+      const allowedSections = user.allowedSections || [];
+      const normalizedAllowed = allowedSections.map((section) =>
+        section.toLowerCase()
+      );
+      if (
+        to.name &&
+        !normalizedAllowed.includes(to.name.toLowerCase()) &&
+        to.name !== "Dashboard"
+      ) {
+        next({ name: "Overview" });
+      } else {
+        next();
+      }
+    }
+  } else {
+    next();
+  }
 });
 
 export default router;

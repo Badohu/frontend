@@ -1,145 +1,236 @@
 <template>
-  <div class="department-manager">
-    <h2>Department Manager</h2>
+  <div class="department-page">
+    <header class="page-header">
+      <h1>Departments</h1>
+      <p class="subtitle">Manage your company's departments</p>
+    </header>
 
-    <div class="form-section">
-      <h3>Add New Department</h3>
-      <input
-        v-model="newDepartment.name"
-        @keyup.enter="addDepartment"
-        placeholder="e.g., Finance, Sales"
-        aria-label="New department name"
-        class="name-input"
-      />
-      <button @click="addDepartment" :disabled="!newDepartment.name.trim()">
-        Add Department
-      </button>
-    </div>
-
-    <hr />
-
-    <h3>Current Departments ({{ departments.length }})</h3>
-    <table class="departments-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Department Name</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="dept in departments" :key="dept.id">
-          <td>{{ dept.id }}</td>
-          <td>{{ dept.name }}</td>
-          <td>
-            <button class="delete-btn" @click="deleteDepartment(dept.id)">
-              🗑️ Delete
+    <div class="content-grid">
+      <div class="card add-department-card">
+        <div class="card-header">
+          <h3>Add New Department</h3>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="addDepartment">
+            <div class="form-group">
+              <label for="dept-name">Department Name</label>
+              <input
+                id="dept-name"
+                v-model="newDepartment.name"
+                placeholder="e.g., Finance, Sales"
+                aria-label="New department name"
+                class="form-input"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary" :disabled="!newDepartment.name.trim()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add Department
             </button>
-          </td>
-        </tr>
-      </tbody>
-      <tfoot v-if="departments.length === 0">
-        <tr>
-          <td colspan="3" class="empty-message">
-            No departments available. Use the form above to add one!
-          </td>
-        </tr>
-      </tfoot>
-    </table>
+          </form>
+        </div>
+      </div>
+
+      <div class="card department-list-card">
+        <div class="card-header">
+          <h3>Current Departments ({{ departments.length }})</h3>
+        </div>
+        <div class="card-body">
+          <ul class="department-list">
+            <li v-for="dept in departments" :key="dept.id" class="department-item">
+              <span class="dept-name">{{ dept.name }}</span>
+              <div class="actions">
+                <button class="btn btn-icon btn-danger" @click="deleteDepartment(dept.id)" aria-label="Delete department">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+              </div>
+            </li>
+          </ul>
+          <div v-if="departments.length === 0" class="empty-message">
+            <p>No departments found.</p>
+            <span>Use the form to add your first department.</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-/* Basic styling for presentation */
-.department-manager {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.department-page {
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
 }
 
-.form-section {
-  display: flex;
-  gap: 10px;
+.page-header {
+  margin-bottom: 2rem;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .content-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.card-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.btn {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  border-radius: 5px;
-}
-
-.name-input {
-  flex-grow: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  padding: 8px 12px;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  background-color: #f8a23e;
-  color: white;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s, box-shadow 0.2s;
 }
 
-button:hover:not(:disabled) {
-  background-color: #e2a45d;
+.btn-primary {
+  background-color: #f7921c;
+  color: #ffffff;
 }
 
-button:disabled {
-  background-color: #ccc;
+.btn-primary:hover {
+  background-color: #f5820a;
+}
+
+.btn-primary:disabled {
+  background-color: #9ca3af;
   cursor: not-allowed;
 }
 
-.departments-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
+.btn-danger {
+  background-color: #ef4444;
+  color: #ffffff;
 }
 
-.departments-table th,
-.departments-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
+.btn-danger:hover {
+  background-color: #dc2626;
 }
 
-.departments-table th {
-  background-color: #eef;
+.btn-icon {
+  padding: 0.5rem;
 }
 
-.delete-btn {
-  background-color: #f44336;
+.department-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.delete-btn:hover {
-  background-color: #da190b;
+.department-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.department-item:last-child {
+  border-bottom: none;
+}
+
+.dept-name {
+  font-size: 1rem;
+  color: #111827;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .empty-message {
   text-align: center;
-  font-style: italic;
-  color: #888;
-  padding: 15px;
-  background-color: #f0f0f0;
+  padding: 2rem;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  color: #6b7280;
+}
+
+.empty-message p {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.empty-message span {
+  font-size: 0.875rem;
 }
 </style>
 
 <script setup>
 import { ref, computed } from "vue";
+import { useDepartments } from "@/services/useDepartments.js";
 
-// --- State Management ---
-// Reactive array to hold department data
-const departments = ref([
-  // { id: 101, name: "Marketing" },
-  // { id: 102, name: "Engineering" },
-  // { id: 103, name: "Human Resources" },
-]);
+const { departments, addDepartment: addDepartmentComposable, deleteDepartment: deleteDepartmentComposable } = useDepartments();
 
 // Reactive object for the new department input
 const newDepartment = ref({ name: "" });
@@ -155,18 +246,7 @@ const addDepartment = () => {
   const name = newDepartment.value.name.trim();
 
   if (name) {
-    // Check for duplicates (case-insensitive)
-    const isDuplicate = departments.value.some(
-      (d) => d.name.toLowerCase() === name.toLowerCase()
-    );
-
-    if (isDuplicate) {
-      alert("This department already exists!");
-      return;
-    }
-
-    // Add the new department to the reactive array
-    departments.value.push({
+    addDepartmentComposable({
       id: nextId.value,
       name: name,
     });
@@ -185,11 +265,7 @@ const deleteDepartment = (departmentId) => {
       `Are you sure you want to delete the department with ID ${departmentId}?`
     )
   ) {
-    // Filter out the department with the matching ID
-    // This creates a new array and replaces the old one, triggering a view update.
-    departments.value = departments.value.filter(
-      (department) => department.id !== departmentId
-    );
+    deleteDepartmentComposable(departmentId);
   }
 };
 </script>

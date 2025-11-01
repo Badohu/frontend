@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <div class="sidebar-header">
-            <span class="logo">💼</span>      
+      <!--       <span class="logo"></span>       -->
       <span class="title">Dashboard</span>
     </div>
     <nav class="sidebar-nav">
@@ -33,8 +33,19 @@ const route = useRoute();
 
 const dashboardChildren = computed(() => {
   const dashboardMatch = route.matched.find((r) => r.name === "Dashboard");
+  const user = JSON.parse(localStorage.getItem("user"));
+  const allowedSections = user?.allowedSections || [];
+  console.log("Allowed sections:", allowedSections);
+  if (dashboardMatch) {
+    return dashboardMatch.children.filter((child) => {
+      const normalizedAllowed = allowedSections.map((section) =>
+        section.toLowerCase()
+      );
+      return normalizedAllowed.includes(child.name.toString().toLowerCase());
+    });
+  }
 
-  return dashboardMatch?.children || [];
+  return [];
 });
 </script>
 
@@ -83,10 +94,7 @@ const dashboardChildren = computed(() => {
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  background:(
-    135deg,
-    #f8a23e
-  );
+  background: (135deg, #f8a23e);
   box-shadow: 0 4px 14px rgba(2, 6, 23, 0.4);
   font-size: 1.25rem;
 }
@@ -144,8 +152,7 @@ const dashboardChildren = computed(() => {
 /* active state */
 .nav-link.is-active {
   color: #f8a23e;
-  background:color(#f8a23e 10% 
-  );
+  background: color(#f8a23e 10%);
   box-shadow: inset 4px 0 0 var(--accent);
 }
 

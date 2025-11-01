@@ -1,37 +1,60 @@
-// Simple demo auth service (mock)
-const users = {
-  "ceo@company.com": {
-    role: "ceo",
-    sections: ["ceo", "manager", "employee"],
-  },
-  "admin@company.com": { role: "ceo", sections: ["ceo"] },
-  "manager@company.com": { role: "manager", sections: ["manager", "employee"] },
-  "employee@company.com": {
-    role: "employee",
-    sections: ["overview", "projects"],
-  },
-};
+import { useUsers } from "./useUsers";
 
-export async function login(username, password) {
+export async function login(email, password) {
   // simulate network latency
   await new Promise((r) => setTimeout(r, 300));
 
-  const normalized = (username || "").trim().toLowerCase();
-  const user = users[normalized];
+  const { users } = useUsers();
+  console.log("Users from useUsers:", users.value);
+  const user = users.value.find((u) => u.email === email);
 
   // Basic validations for demo purposes
   if (!user) {
-    throw new Error("Unknown user");
+    throw new Error("Unknown user or invalid password");
   }
-  if (!password || password.length < 8) {
-    throw new Error("Invalid credentials");
-  }
+
+  const roleBasedAccess = {
+    CEO: [
+      "Overview",
+      "budgets",
+      "PaymentRequests",
+      "Projects",
+      "Department",
+      "Users",
+    ],
+
+    HR: [
+      "Overview",
+      "Department",
+      "budgets",
+      "PaymentRequests",
+      "Projects",
+      "Department",
+      "Users",
+    ],
+
+    "FINANCE MANAGER": [
+      "Overview",
+      "Department",
+      "budgets",
+      "PaymentRequests",
+      "Projects",
+      "Users",
+    ],
+
+    "FINANCE OFFICER": ["Overview", "budgets", "PaymentRequests", "Projects"],
+
+    INTERN: ["Overview", "Projects"],
+
+    EMPLOYEE: ["Overview", "Projects", "PaymentRequests"],
+  };
+
+  const allowedSections = roleBasedAccess[user.role] || [];
 
   // Return minimal user object; in real app you'd get a token and roles from backend
   return {
-    username: normalized,
+    username: user.name,
     role: user.role,
-    allowedSections: user.sections,
-    // expiry/time/token fields could go here
+    allowedSections,
   };
 }

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["es2020", "dom"],
+    "allowJs": true,
+    "checkJs": false,
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*", "env.d.ts"],
+  "exclude": ["node_modules", "dist"],
+  "vueCompilerOptions": {
+    "globalTypesPath": "./src/shims-vue.d.ts"
+  }
+}

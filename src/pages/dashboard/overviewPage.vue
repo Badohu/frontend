@@ -1,173 +1,157 @@
 <template>
-  <div class="dashboard">
-    <!-- HEADER -->
+  <div class="dashboard page-shell">
     <header class="dashboard-header">
       <div class="header-left">
-        <h1>Dashboard Overview</h1>
-        <p class="subtitle">Quick insight into your budgets and requests</p>
+        <h1 class="title">Dashboard Overview</h1>
+        <p class="subtitle">
+          High level insights across users, projects and budgets
+        </p>
       </div>
 
-      <div class="notification-wrapper">
-        <button
-          class="notif-btn"
-          @click="toggleNotifications"
-          :aria-expanded="String(showNotifications)"
-        >
-          🔔
-          <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
-        </button>
+      <div class="header-actions">
+        <div class="search-wrap">
+          <input
+            aria-label="Search"
+            placeholder="Search users, projects..."
+            class="search"
+          />
+        </div>
 
-        <div
-          v-if="showNotifications"
-          class="notif-dropdown"
-          role="dialog"
-          aria-label="Notifications"
-        >
-          <div class="notif-header">
-            <strong>Notifications</strong>
-            <div class="notif-actions">
-              <button
-                class="btn small"
-                @click="markAllRead"
-                :disabled="unreadCount === 0"
-              >
-                Mark all read
-              </button>
-              <button class="btn small" @click="toggleNotifications">
-                Close
-              </button>
+        <div class="notification-wrapper">
+          <button
+            class="notif-btn"
+            @click="toggleNotifications"
+            :aria-expanded="String(showNotifications)"
+            aria-label="Toggle notifications"
+          >
+            🔔
+            <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+          </button>
+
+          <div
+            v-if="showNotifications"
+            class="notif-dropdown"
+            role="dialog"
+            aria-label="Notifications"
+          >
+            <div class="notif-header">
+              <strong>Notifications</strong>
+              <div class="notif-actions">
+                <button
+                  class="btn small"
+                  @click="markAllRead"
+                  :disabled="unreadCount === 0"
+                >
+                  Mark all read
+                </button>
+                <button class="btn small" @click="toggleNotifications">
+                  Close
+                </button>
+              </div>
             </div>
-          </div>
 
-          <ul class="notif-list">
-            <li
-              v-for="n in notifications"
-              :key="n.id"
-              :class="{ unread: !n.read }"
-            >
-              <div class="n-main">
-                <div class="n-title">{{ n.title }}</div>
-                <div class="n-body">{{ n.body }}</div>
-              </div>
-              <div class="n-meta">
-                <small class="n-time">{{ n.time }}</small>
-                <div class="n-action-buttons">
-                  <button class="btn tiny" @click="toggleRead(n)">
-                    {{ n.read ? "Unread" : "Read" }}
-                  </button>
-                  <button class="btn tiny danger" @click="dismiss(n.id)">
-                    Dismiss
-                  </button>
+            <ul class="notif-list">
+              <li
+                v-for="n in notifications"
+                :key="n.id"
+                :class="{ unread: !n.read }"
+              >
+                <div class="n-main">
+                  <div class="n-title">{{ n.title }}</div>
+                  <div class="n-body">{{ n.body }}</div>
                 </div>
-              </div>
-            </li>
-          </ul>
+                <div class="n-meta">
+                  <small class="n-time">{{ n.time }}</small>
+                  <div class="n-action-buttons">
+                    <button class="btn tiny" @click="toggleRead(n)">
+                      {{ n.read ? "Unread" : "Read" }}
+                    </button>
+                    <button class="btn tiny danger" @click="dismiss(n.id)">
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </li>
+            </ul>
 
-          <div v-if="notifications.length === 0" class="notif-empty">
-            No notifications
+            <div v-if="notifications.length === 0" class="notif-empty">
+              No notifications
+            </div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- SUMMARY CARDS -->
+    <!-- Summary cards -->
     <section class="summary-grid">
-      <div class="card stat-card">
-        <div class="card-icon users-icon">
-          <i class="fas fa-users"></i>
-        </div>
-        <div class="card-content">
-          <div class="card-title">Total Users</div>
-          <div class="card-value">{{ users.length }}</div>
-          <div class="card-trend">
-            <span class="trend-up">+{{ newUsersThisMonth }}</span> this month
+      <div class="card stat-card card-glass">
+        <div class="card-left">
+          <div class="card-icon users-icon">
+            <i class="fas fa-users" aria-hidden="true"></i>
           </div>
+        </div>
+        <div class="card-right">
+          <div class="card-title">Users</div>
+          <div class="card-value">{{ users.length }}</div>
+          <div class="card-meta">+{{ newUsersThisMonth }} this month</div>
         </div>
       </div>
 
-      <div class="card stat-card">
-        <div class="card-icon departments-icon">
-          <i class="fas fa-building"></i>
+      <div class="card stat-card card-glass">
+        <div class="card-left">
+          <div class="card-icon departments-icon">
+            <i class="fas fa-building" aria-hidden="true"></i>
+          </div>
         </div>
-        <div class="card-content">
+        <div class="card-right">
           <div class="card-title">Departments</div>
           <div class="card-value">{{ departments.length }}</div>
-          <div class="card-subtitle">Active departments</div>
+          <div class="card-meta">Active departments</div>
         </div>
       </div>
 
-      <div class="card stat-card">
-        <div class="card-icon projects-icon">
-          <i class="fas fa-folder"></i>
-        </div>
-        <div class="card-content">
-          <div class="card-title">Projects</div>
-          <div class="card-value">{{ projects.length }}</div>
-          <div class="card-subtitle">Total expense lines</div>
-        </div>
-      </div>
-
-      <div class="card stat-card">
-        <div class="card-icon budget-icon">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="card-content">
-          <div class="card-title">Total Budget</div>
-          <div class="card-value">{{ formatCurrency(totalBudget) }}</div>
-          <div class="card-subtitle">Across all projects</div>
-        </div>
-      </div>
-
-      <div class="card stat-card">
-        <div class="card-icon spent-icon">
-          <i class="fas fa-money-bill-wave"></i>
-        </div>
-        <div class="card-content">
-          <div class="card-title">Total Spent</div>
-          <div class="card-value">{{ formatCurrency(totalSpent) }}</div>
-          <div class="card-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: spentPercentage + '%' }"></div>
-            </div>
-            <span class="progress-text">{{ spentPercentage }}% of budget</span>
+      <div class="card stat-card card-glass">
+        <div class="card-left">
+          <div class="card-icon projects-icon">
+            <i class="fas fa-folder" aria-hidden="true"></i>
           </div>
         </div>
+        <div class="card-right">
+          <div class="card-title">Projects</div>
+          <div class="card-value">{{ projects.length }}</div>
+          <div class="card-meta">Expense lines</div>
+        </div>
       </div>
 
-      <div class="card stat-card">
-        <div class="card-icon remaining-icon">
-          <i class="fas fa-wallet"></i>
+      <div class="card stat-card card-glass">
+        <div class="card-left">
+          <div class="card-icon budget-icon">
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
+          </div>
         </div>
-        <div class="card-content">
-          <div class="card-title">Remaining</div>
-          <div class="card-value">{{ formatCurrency(totalRemaining) }}</div>
-          <div class="card-subtitle">Available funds</div>
+        <div class="card-right">
+          <div class="card-title">Total Budget</div>
+          <div class="card-value">{{ formatCurrency(totalBudget) }}</div>
+          <div class="card-meta">Across all projects</div>
         </div>
       </div>
     </section>
 
-    <!-- TWO COLUMN LAYOUT -->
     <div class="dashboard-grid">
-      <!-- LEFT COLUMN -->
       <div class="left-column">
-        <!-- RECENT USERS -->
         <section class="dashboard-section">
           <div class="section-header">
-            <h2>
-              <i class="fas fa-user-plus"></i>
-              Recent Users
-            </h2>
-            <router-link to="/users" class="view-all-link">View All →</router-link>
+            <h2>Recent Users</h2>
+            <router-link to="/users" class="view-all-link"
+              >View All →</router-link
+            >
           </div>
+
           <div class="users-list">
             <div v-if="recentUsers.length === 0" class="empty-state">
               No users added yet
             </div>
-            <div 
-              v-for="user in recentUsers" 
-              :key="user.id" 
-              class="user-item"
-            >
+            <div v-for="user in recentUsers" :key="user.id" class="user-item">
               <div class="user-avatar">{{ getInitials(user.name) }}</div>
               <div class="user-info">
                 <div class="user-name">{{ user.name }}</div>
@@ -180,61 +164,56 @@
           </div>
         </section>
 
-        <!-- DEPARTMENTS OVERVIEW -->
         <section class="dashboard-section">
           <div class="section-header">
-            <h2>
-              <i class="fas fa-building"></i>
-              Departments
-            </h2>
-            <router-link to="/departments" class="view-all-link">Manage →</router-link>
+            <h2>Departments</h2>
+            <router-link to="/departments" class="view-all-link"
+              >Manage →</router-link
+            >
           </div>
           <div class="departments-list">
             <div v-if="departments.length === 0" class="empty-state">
               No departments created yet
             </div>
-            <div 
-              v-for="dept in departments" 
-              :key="dept.id" 
-              class="dept-item"
-            >
+            <div v-for="dept in departments" :key="dept.id" class="dept-item">
               <div class="dept-icon">
-                <i class="fas fa-briefcase"></i>
+                <i class="fas fa-briefcase" aria-hidden="true"></i>
               </div>
               <div class="dept-info">
                 <div class="dept-name">{{ dept.name }}</div>
-                <div class="dept-count">{{ getUserCountByDept(dept.name) }} users</div>
+                <div class="dept-count">
+                  {{ getUserCountByDept(dept.name) }} users
+                </div>
               </div>
             </div>
           </div>
         </section>
       </div>
 
-      <!-- RIGHT COLUMN -->
       <div class="right-column">
-        <!-- PROJECTS OVERVIEW -->
         <section class="dashboard-section">
           <div class="section-header">
-            <h2>
-              <i class="fas fa-project-diagram"></i>
-              Recent Projects
-            </h2>
-            <router-link to="/projects" class="view-all-link">View All →</router-link>
+            <h2>Recent Projects</h2>
+            <router-link to="/projects" class="view-all-link"
+              >View All →</router-link
+            >
           </div>
           <div class="projects-list">
             <div v-if="recentProjects.length === 0" class="empty-state">
               No projects created yet
             </div>
-            <div 
-              v-for="project in recentProjects" 
-              :key="project.id" 
+            <div
+              v-for="project in recentProjects"
+              :key="project.id"
               class="project-item"
             >
               <div class="project-header">
                 <div class="project-name">{{ project.name }}</div>
                 <div class="project-category">{{ project.category }}</div>
               </div>
-              <div class="project-description">{{ project.description || 'No description' }}</div>
+              <div class="project-description">
+                {{ project.description || "No description" }}
+              </div>
               <div class="project-budget">
                 Budget: {{ formatCurrency(project.budget || 0) }}
               </div>
@@ -242,30 +221,28 @@
           </div>
         </section>
 
-        <!-- BUDGET BREAKDOWN BY CATEGORY -->
         <section class="dashboard-section">
           <div class="section-header">
-            <h2>
-              <i class="fas fa-chart-pie"></i>
-              Budget by Category
-            </h2>
+            <h2>Budget by Category</h2>
           </div>
           <div class="category-breakdown">
             <div v-if="categoryBreakdown.length === 0" class="empty-state">
               No budget data available
             </div>
-            <div 
-              v-for="cat in categoryBreakdown" 
+            <div
+              v-for="cat in categoryBreakdown"
               :key="cat.category"
               class="category-item"
             >
               <div class="category-info">
                 <div class="category-name">{{ cat.category }}</div>
-                <div class="category-amount">{{ formatCurrency(cat.total) }}</div>
+                <div class="category-amount">
+                  {{ formatCurrency(cat.total) }}
+                </div>
               </div>
               <div class="category-bar">
-                <div 
-                  class="category-bar-fill" 
+                <div
+                  class="category-bar-fill"
                   :style="{ width: cat.percentage + '%' }"
                 ></div>
               </div>
@@ -278,7 +255,6 @@
       </div>
     </div>
 
-    <!-- QUICK STATS BAR -->
     <section class="quick-stats">
       <div class="stat-item">
         <i class="fas fa-clock"></i>
@@ -370,9 +346,7 @@ const spentPercentage = computed(() => {
 
 // Recent users (last 5)
 const recentUsers = computed(() => {
-  return [...users.value]
-    .sort((a, b) => (b.id || 0) - (a.id || 0))
-    .slice(0, 5);
+  return [...users.value].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 5);
 });
 
 // Recent projects (last 5)
@@ -385,9 +359,9 @@ const recentProjects = computed(() => {
 // Budget breakdown by category
 const categoryBreakdown = computed(() => {
   const breakdown = {};
-  
-  projects.value.forEach(project => {
-    const cat = project.category || 'Uncategorized';
+
+  projects.value.forEach((project) => {
+    const cat = project.category || "Uncategorized";
     if (!breakdown[cat]) {
       breakdown[cat] = { total: 0, count: 0 };
     }
@@ -395,19 +369,24 @@ const categoryBreakdown = computed(() => {
     breakdown[cat].count += 1;
   });
 
-  const total = Object.values(breakdown).reduce((sum, item) => sum + item.total, 0);
+  const total = Object.values(breakdown).reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
 
-  return Object.entries(breakdown).map(([category, data]) => ({
-    category,
-    total: data.total,
-    count: data.count,
-    percentage: total > 0 ? Math.round((data.total / total) * 100) : 0
-  })).sort((a, b) => b.total - a.total);
+  return Object.entries(breakdown)
+    .map(([category, data]) => ({
+      category,
+      total: data.total,
+      count: data.count,
+      percentage: total > 0 ? Math.round((data.total / total) * 100) : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
 });
 
 // Get user count by department
 function getUserCountByDept(deptName) {
-  return users.value.filter(u => u.department === deptName).length;
+  return users.value.filter((u) => u.department === deptName).length;
 }
 
 // Get initials for avatar
@@ -1059,5 +1038,101 @@ function dismiss(id) {
   padding: 2rem;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+/* New visual refinements */
+.page-shell {
+  padding: 2.25rem;
+  background-color: #f8f9fa;
+}
+
+.dashboard-header {
+  align-items: center;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.9rem;
+  margin: 0;
+  color: var(--text);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search {
+  border: 1px solid #e6e9ef;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  min-width: 220px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.card-glass {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.85)
+  );
+  border: 1px solid rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(6px);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.card-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-value {
+  font-size: 1.4rem;
+  margin-top: 0.25rem;
+  color: var(--text);
+}
+
+.card-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Slightly larger avatar look for user list */
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+}
+
+/* Polished project item */
+.project-item {
+  padding: 1rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #fcfcfd);
+}
+
+/* Make quick-stats feel lighter */
+.quick-stats {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .header-actions {
+    display: none;
+  }
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>

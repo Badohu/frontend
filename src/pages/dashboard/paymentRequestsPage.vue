@@ -324,6 +324,7 @@ onUnmounted(() => {
 .requests-view {
   padding: 20px;
   font-family: Inter, sans-serif;
+  background-color: #f8f9fa;
 }
 .subtitle {
   color: #666;

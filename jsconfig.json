@@ -3,8 +3,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    /* Limit automatic ambient type inclusion and register vite client types */
+    "types": ["vite/client"],
+    "lib": ["es2020", "dom"],
+    "moduleResolution": "node",
+    "allowJs": true
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*.js"]
+  "include": ["src/**/*.js", "src/**/*.ts", "src/**/*.vue"]
 }

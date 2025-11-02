@@ -147,7 +147,7 @@ function deleteProject(projectId) {
 <style scoped>
 .projects-page {
   padding: 2rem;
-  background-color: var(--background, #f8f9fa);
+  background-color: var(--background, #dddddd);
 }
 
 .page-header {

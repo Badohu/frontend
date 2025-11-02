@@ -103,7 +103,7 @@
 .department-page {
   padding: 2rem;
   font-family: "Inter", sans-serif;
-  background-color: #f8f9fa;
+  background-color: #dddddd;
   min-height: 100vh;
 }
 

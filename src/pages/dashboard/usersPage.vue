@@ -388,7 +388,7 @@ function bulkDelete() {
 
 .users-page {
   padding: 2rem;
-  background-color: #f8f9fa;
+  background-color: #dddddd;
   min-height: 100vh;
 }
 

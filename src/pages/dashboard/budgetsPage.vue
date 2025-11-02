@@ -189,7 +189,7 @@ onMounted(loadBudgets);
 /* --- Page Layout --- */
 .budgets-page {
   padding: 2rem;
-  background-color: var(--background, #f8f9fa);
+  background-color: var(--background, #dddddd);
 }
 
 /* --- Header --- */

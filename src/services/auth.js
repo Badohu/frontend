@@ -29,7 +29,6 @@ export async function login(email, password) {
       "budgets",
       "PaymentRequests",
       "Projects",
-      "Department",
       "Users",
     ],
 
@@ -44,7 +43,7 @@ export async function login(email, password) {
 
     "FINANCE OFFICER": ["Overview", "budgets", "PaymentRequests", "Projects"],
 
-    INTERN: ["Overview", "Projects"],
+    INTERN: ["Overview", "Projects", "PaymentRequests"],
 
     EMPLOYEE: ["Overview", "Projects", "PaymentRequests"],
   };

@@ -279,6 +279,7 @@ function showDescription(description) {
 
 function closeDescriptionModal() {
   showDescriptionModal.value = false;
+  currentDescription.value = "";
 }
 
 function toggleActionMenu(id) {
@@ -430,5 +431,43 @@ td {
 }
 .btn-danger-text {
   color: #dc2626;
+}
+
+/* Description Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+}
+.modal {
+  background: #fff;
+  border-radius: 8px;
+  max-width: 720px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+.modal-body {
+  padding: 16px;
+  color: #333;
+  max-height: 60vh;
+  overflow: auto;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
 }
 </style>

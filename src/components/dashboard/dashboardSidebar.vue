@@ -69,7 +69,7 @@ const dashboardChildren = computed(() => {
   );
   color: var(--text);
   width: 240px;
-  min-height: 100vh;
+  /* min-height: 100vh; */
   display: grid;
   grid-template-rows: auto 1fr auto;
   padding: 2rem 1.25rem;

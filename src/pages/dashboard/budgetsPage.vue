@@ -113,11 +113,12 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useProjectStore } from "@/stores/projectStore";
+import { useProjects } from "@/services/useProjects";
 
 const projectStore = useProjectStore();
 const STORAGE_KEY = "budgets_v2";
 
-const selectedCurrency = ref("USD");
+const selectedCurrency = ref("GHS");
 const budgets = ref([]);
 const showSaved = ref(false);
 
@@ -145,6 +146,27 @@ function saveBudgets() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(budgets.value));
     showToast();
+
+    // Also sync allocated budgets back to the projects storage so the
+    // Overview (which reads projects) shows updated budgets immediately.
+    try {
+      const { saveProject } = useProjects();
+      budgets.value.forEach((b) => {
+        // Update in-memory project store
+        const proj = projectStore.projects.find((p) => p.id === b.id);
+        if (proj) {
+          // Ensure numeric values
+          const allocated = Number(b.allocated) || 0;
+          const used = Number(b.used) || 0;
+          // Update the project in storage via saveProject (will update projects_v1)
+          saveProject({ ...proj, budget: allocated, used });
+          // Also update the project store in-memory
+          projectStore.updateProjectBudget(proj.id, allocated);
+        }
+      });
+    } catch (syncErr) {
+      console.warn("Failed to sync budgets to projects store:", syncErr);
+    }
   } catch (e) {
     console.error("Error saving budgets:", e);
   }

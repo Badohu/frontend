@@ -44,8 +44,8 @@
           <option value="HR">HR</option>
           <option value="FINANCE MANAGER">Finance Manager</option>
           <option value="FINANCE OFFICER">Finance Officer</option>
-          <option value="INTERN">Intern</option>
-          <option value="EMPLOYEE">Employee</option>
+          <!-- <option value="INTERN">Intern</option>
+          <option value="EMPLOYEE">Employee</option> -->
         </select>
       </div>
     </div>
@@ -206,10 +206,10 @@
                   <option value="" disabled>Select role</option>
                   <option value="CEO">CEO</option>
                   <option value="HR">HR</option>
-                  <option value="FINANCE MANAGER">Finance Manager</option>
-                  <option value="FINANCE OFFICER">Finance Officer</option>
-                  <option value="INTERN">Intern</option>
-                  <option value="EMPLOYEE">Employee</option>
+                  <option value="FINANCE MANAGER">FINANCE MANAGER</option>
+                  <option value="FINANCE OFFICER">FINANCE OFFICER</option>
+                  <!-- <option value="INTERN">Intern</option>
+                  <option value="EMPLOYEE">Employee</option> -->
                 </select>
               </div>
             </div>
@@ -248,8 +248,10 @@
 <script setup>
 import { ref, computed, reactive } from "vue";
 import { useUsers } from "@/services/useUsers";
+import { useDepartments } from "@/services/useDepartments";
 
 const { users, addUser, updateUser, deleteUser: removeUser } = useUsers();
+const { departments: deptList } = useDepartments();
 
 const search = ref("");
 const departmentFilter = ref("");
@@ -267,9 +269,8 @@ const userForm = reactive({
   password: "",
 });
 
-const departments = computed(() => [
-  ...new Set(users.value.map((u) => u.department)),
-]);
+// Departments are loaded from the departments service (created on the Departments page)
+const departments = computed(() => deptList.value.map((d) => d.name));
 
 const filteredUsers = computed(() => {
   return users.value.filter((user) => {
@@ -306,8 +307,8 @@ function getRoleClass(role) {
     HR: "role-hr",
     "FINANCE MANAGER": "role-manager",
     "FINANCE OFFICER": "role-officer",
-    INTERN: "role-intern",
-    EMPLOYEE: "role-employee",
+    // INTERN: "role-intern",
+    // EMPLOYEE: "role-employee",
   };
   return roleClasses[role] || "";
 }

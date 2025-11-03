@@ -111,11 +111,12 @@
         <div class="card-icon budget-icon">
           <i class="fas fa-chart-line"></i>
         </div>
-        <div class="card-content">
+        <!-- Make the card content a link to the Budgets page -->
+        <router-link to="/dashboard/budgets" class="card-content card-link">
           <div class="card-title">Total Budget</div>
           <div class="card-value">{{ formatCurrency(totalBudget) }}</div>
           <div class="card-subtitle">Across all projects</div>
-        </div>
+        </router-link>
       </div>
 
       <div class="card stat-card">
@@ -127,7 +128,10 @@
           <div class="card-value">{{ formatCurrency(totalSpent) }}</div>
           <div class="card-progress">
             <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: spentPercentage + '%' }"></div>
+              <div
+                class="progress-fill"
+                :style="{ width: spentPercentage + '%' }"
+              ></div>
             </div>
             <span class="progress-text">{{ spentPercentage }}% of budget</span>
           </div>
@@ -157,17 +161,15 @@
               <i class="fas fa-user-plus"></i>
               Recent Users
             </h2>
-            <!-- <router-link to="/users" class="view-all-link">View All →</router-link> -->
+            <router-link to="/dashboard/users" class="view-all-link"
+              >View All →</router-link
+            >
           </div>
           <div class="users-list">
             <div v-if="recentUsers.length === 0" class="empty-state">
               No users added yet
             </div>
-            <div 
-              v-for="user in recentUsers" 
-              :key="user.id" 
-              class="user-item"
-            >
+            <div v-for="user in recentUsers" :key="user.id" class="user-item">
               <div class="user-avatar">{{ getInitials(user.name) }}</div>
               <div class="user-info">
                 <div class="user-name">{{ user.name }}</div>
@@ -178,7 +180,7 @@
               </div>
             </div>
             <div v-if="users.length > 3" class="view-more-hint">
-              <!-- <router-link to="/users" class="view-more-link">
+              <!-- <router-link to="/dashboard/users" class="view-more-link">
                 +{{ users.length - 3 }} more users
               </router-link> -->
             </div>
@@ -192,15 +194,17 @@
               <i class="fas fa-building"></i>
               Departments
             </h2>
-            <!-- <router-link to="/departmentPage.vue" class="view-all-link">View All →</router-link> -->
+            <router-link to="/dashboard/department" class="view-all-link"
+              >View All →</router-link
+            >
           </div>
           <div class="departments-list">
             <div v-if="recentDepartments.length === 0" class="empty-state">
               No departments created yet
             </div>
-            <div 
-              v-for="dept in recentDepartments" 
-              :key="dept.id" 
+            <div
+              v-for="dept in recentDepartments"
+              :key="dept.id"
               class="dept-item"
             >
               <div class="dept-icon">
@@ -208,7 +212,9 @@
               </div>
               <div class="dept-info">
                 <div class="dept-name">{{ dept.name }}</div>
-                <div class="dept-count">{{ getUserCountByDept(dept.name) }} users</div>
+                <div class="dept-count">
+                  {{ getUserCountByDept(dept.name) }} users
+                </div>
               </div>
             </div>
             <div v-if="departments.length > 3" class="view-more-hint">
@@ -229,30 +235,34 @@
               <i class="fas fa-project-diagram"></i>
               Recent Projects
             </h2>
-            <!-- <router-link to="/projects" class="view-all-link">View All →</router-link> -->
+            <router-link to="/dashboard/projects" class="view-all-link"
+              >View All →</router-link
+            >
           </div>
           <div class="projects-list">
             <div v-if="recentProjects.length === 0" class="empty-state">
               No projects created yet
             </div>
-            <div 
-              v-for="project in recentProjects" 
-              :key="project.id" 
+            <div
+              v-for="project in recentProjects"
+              :key="project.id"
               class="project-item"
             >
               <div class="project-header">
                 <div class="project-name">{{ project.name }}</div>
                 <div class="project-category">{{ project.category }}</div>
               </div>
-              <div class="project-description">{{ project.description || 'No description' }}</div>
+              <div class="project-description">
+                {{ project.description || "No description" }}
+              </div>
               <div class="project-budget">
                 Budget: {{ formatCurrency(project.budget || 0) }}
               </div>
             </div>
             <div v-if="projects.length > 3" class="view-more-hint">
-              <!-- <router-link to="/projects" class="view-more-link">
+              <router-link to="/dashboard/projects" class="view-more-link">
                 +{{ projects.length - 3 }} more projects
-              </router-link> -->
+              </router-link>
             </div>
           </div>
         </section>
@@ -268,19 +278,24 @@
           <div class="category-breakdown">
             <div v-if="categoryBreakdown.length === 0" class="empty-state">
               No budget data available
+              <router-link to="/dashboard/budgets" class="view-all-link">
+                View all budgets
+              </router-link>
             </div>
-            <div 
-              v-for="cat in categoryBreakdown" 
+            <div
+              v-for="cat in categoryBreakdown"
               :key="cat.category"
               class="category-item"
             >
               <div class="category-info">
                 <div class="category-name">{{ cat.category }}</div>
-                <div class="category-amount">{{ formatCurrency(cat.total) }}</div>
+                <div class="category-amount">
+                  {{ formatCurrency(cat.total) }}
+                </div>
               </div>
               <div class="category-bar">
-                <div 
-                  class="category-bar-fill" 
+                <div
+                  class="category-bar-fill"
                   :style="{ width: cat.percentage + '%' }"
                 ></div>
               </div>
@@ -299,7 +314,7 @@
     </div>
 
     <!-- QUICK STATS BAR -->
-    <section class="quick-stats">
+    <!-- <section class="quick-stats">
       <div class="stat-item">
         <i class="fas fa-clock"></i>
         <div class="stat-content">
@@ -321,7 +336,7 @@
           <div class="stat-value">{{ completionRate }}%</div>
         </div>
       </div>
-    </section>
+    </section> -->
   </div>
 </template>
 
@@ -388,9 +403,7 @@ const spentPercentage = computed(() => {
 
 // Recent users (last 3 for preview)
 const recentUsers = computed(() => {
-  return [...users.value]
-    .sort((a, b) => (b.id || 0) - (a.id || 0))
-    .slice(0, 3);
+  return [...users.value].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 3);
 });
 
 // Recent projects (last 3 for preview)
@@ -408,9 +421,9 @@ const recentDepartments = computed(() => {
 // Budget breakdown by category (top 3)
 const categoryBreakdown = computed(() => {
   const breakdown = {};
-  
-  projects.value.forEach(project => {
-    const cat = project.category || 'Uncategorized';
+
+  projects.value.forEach((project) => {
+    const cat = project.category || "Uncategorized";
     if (!breakdown[cat]) {
       breakdown[cat] = { total: 0, count: 0 };
     }
@@ -418,14 +431,17 @@ const categoryBreakdown = computed(() => {
     breakdown[cat].count += 1;
   });
 
-  const total = Object.values(breakdown).reduce((sum, item) => sum + item.total, 0);
+  const total = Object.values(breakdown).reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
 
   return Object.entries(breakdown)
     .map(([category, data]) => ({
       category,
       total: data.total,
       count: data.count,
-      percentage: total > 0 ? Math.round((data.total / total) * 100) : 0
+      percentage: total > 0 ? Math.round((data.total / total) * 100) : 0,
     }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 3); // Only show top 3 categories
@@ -690,6 +706,16 @@ function dismiss(id) {
 
 .view-all-link:hover {
   color: #e8830f;
+}
+
+/* Make card content look like a regular card while being a link */
+.card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.card-link:hover .card-value {
+  text-decoration: underline;
 }
 
 .empty-state {

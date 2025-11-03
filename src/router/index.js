@@ -40,11 +40,11 @@ const routes = [
 
       {
         path: "users",
-        name: "users",
+        name: "Users",
         component: usersPage,
       },
 
-      { path: "department", name: "department", component: departmentPage },
+      { path: "department", name: "Department", component: departmentPage },
 
       { path: "projects", name: "Projects", component: ProjectsPage },
       // { path: "projects", name: "Projects", component: ProjectsPage },

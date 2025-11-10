@@ -72,7 +72,7 @@
 
     <!-- SUMMARY CARDS -->
     <section class="summary-grid">
-      <div class="card stat-card">
+      <!-- <div class="card stat-card">
         <div class="card-icon users-icon">
           <i class="fas fa-users"></i>
         </div>
@@ -83,8 +83,8 @@
             <span class="trend-up">+{{ newUsersThisMonth }}</span> this month
           </div>
         </div>
-      </div>
-
+      </div> --> 
+<!-- 
       <div class="card stat-card">
         <div class="card-icon departments-icon">
           <i class="fas fa-building"></i>
@@ -94,9 +94,9 @@
           <div class="card-value">{{ departments.length }}</div>
           <div class="card-subtitle">Active departments</div>
         </div>
-      </div>
+      </div> -->
 
-      <div class="card stat-card">
+      <!-- <div class="card stat-card">
         <div class="card-icon projects-icon">
           <i class="fas fa-folder"></i>
         </div>
@@ -105,7 +105,7 @@
           <div class="card-value">{{ projects.length }}</div>
           <div class="card-subtitle">Total expense lines</div>
         </div>
-      </div>
+      </div> -->
 
       <div class="card stat-card">
         <div class="card-icon budget-icon">
@@ -179,10 +179,15 @@
                 </div>
               </div>
             </div>
-            <div v-if="users.length > 3" class="view-more-hint">
-              <!-- <router-link to="/dashboard/users" class="view-more-link">
-                +{{ users.length - 3 }} more users
-              </router-link> -->
+            <div class="view-more-hint">
+              <template v-if="users.length > 2">
+                <router-link to="/dashboard/users" class="view-more-link">
+                  +{{ users.length - 2 }} more users
+                </router-link>
+              </template>
+              <template v-else>
+                <div class="helper-text">No additional users</div>
+              </template>
             </div>
           </div>
         </section>
@@ -217,10 +222,15 @@
                 </div>
               </div>
             </div>
-            <div v-if="departments.length > 3" class="view-more-hint">
-              <router-link to="/departments" class="view-more-link">
-                +{{ departments.length - 3 }} more departments
-              </router-link>
+            <div class="view-more-hint">
+              <template v-if="departments.length > 2">
+                <router-link to="/dashboard/department" class="view-more-link">
+                  +{{ departments.length - 2 }} more departments
+                </router-link>
+              </template>
+              <template v-else>
+                <div class="helper-text">No additional departments</div>
+              </template>
             </div>
           </div>
         </section>
@@ -259,10 +269,15 @@
                 Budget: {{ formatCurrency(project.budget || 0) }}
               </div>
             </div>
-            <div v-if="projects.length > 3" class="view-more-hint">
-              <router-link to="/dashboard/projects" class="view-more-link">
-                +{{ projects.length - 3 }} more projects
-              </router-link>
+            <div class="view-more-hint">
+              <template v-if="projects.length > 2">
+                <router-link to="/dashboard/projects" class="view-more-link">
+                  +{{ projects.length - 2 }} more projects
+                </router-link>
+              </template>
+              <template v-else>
+                <div class="helper-text">No additional projects</div>
+              </template>
             </div>
           </div>
         </section>
@@ -303,10 +318,15 @@
                 {{ cat.count }} project(s) • {{ cat.percentage }}%
               </div>
             </div>
-            <div v-if="projects.length > 3" class="view-more-hint">
-              <!-- <router-link to="/budgets" class="view-more-link">
-                View complete budget breakdown
-              </router-link> -->
+            <div class="view-more-hint">
+              <template v-if="projects.length > 2">
+                <!-- <router-link to="/budgets" class="view-more-link">
+                  View complete budget breakdown
+                </router-link> -->
+              </template>
+              <template v-else>
+                <div class="helper-text">No additional budget categories</div>
+              </template>
             </div>
           </div>
         </section>
@@ -346,6 +366,7 @@ import { useUsers } from "@/services/useUsers";
 import { useDepartments } from "@/services/useDepartments";
 import { useProjectStore } from "@/stores/projectStore";
 import { formatCurrency } from "@/services/useCurrency";
+
 
 // Get data from stores
 const { users } = useUsers();
@@ -401,21 +422,21 @@ const spentPercentage = computed(() => {
   return Math.round((totalSpent.value / totalBudget.value) * 100);
 });
 
-// Recent users (last 3 for preview)
+// Recent users (last 2 for preview)
 const recentUsers = computed(() => {
-  return [...users.value].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 3);
+  return [...users.value].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 2);
 });
 
-// Recent projects (last 3 for preview)
+// Recent projects (last 2 for preview)
 const recentProjects = computed(() => {
   return [...projects.value]
     .sort((a, b) => (b.id || 0) - (a.id || 0))
-    .slice(0, 3);
+    .slice(0, 2);
 });
 
-// Recent departments (last 3 for preview)
+// Recent departments (last 2 for preview)
 const recentDepartments = computed(() => {
-  return [...departments.value].slice(0, 3);
+  return [...departments.value].slice(0, 2);
 });
 
 // Budget breakdown by category (top 3)
@@ -444,7 +465,7 @@ const categoryBreakdown = computed(() => {
       percentage: total > 0 ? Math.round((data.total / total) * 100) : 0,
     }))
     .sort((a, b) => b.total - a.total)
-    .slice(0, 3); // Only show top 3 categories
+    .slice(0, 2); // Only show top 2 categories
 });
 
 // Get user count by department
@@ -464,7 +485,7 @@ function getInitials(name) {
 
 // New users this month (simulated)
 const newUsersThisMonth = computed(() => {
-  return Math.min(users.value.length, 3);
+  return Math.min(users.value.length, 2);
 });
 
 // Quick stats (simulated data)
@@ -501,7 +522,7 @@ function dismiss(id) {
 
 .dashboard {
   min-height: 100vh;
-  background: var(--bg);
+  background-color: white;
   padding: 2rem;
   box-sizing: border-box;
 }
@@ -582,10 +603,13 @@ function dismiss(id) {
 }
 
 .card {
-  background: var(--card);
+  /* background: var(--card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s; */
+  background: linear-gradient(135deg, #fe4431,#fe7e5c);
+  border-radius:12px
+
 }
 
 .card:hover {
@@ -594,9 +618,10 @@ function dismiss(id) {
 }
 
 .card-title {
-  font-size: 0.875rem;
+  font-size: 17px;
   color: var(--muted);
   font-weight: 500;
+  color: white;
 }
 
 .card-value {
@@ -604,12 +629,14 @@ function dismiss(id) {
   font-weight: 700;
   margin-top: 0.25rem;
   color: var(--text);
+  color: white;
 }
 
 .card-subtitle {
   font-size: 0.8rem;
   color: var(--muted);
   margin-top: 0.25rem;
+  color: white;
 }
 
 .card-trend {
@@ -636,7 +663,7 @@ function dismiss(id) {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f7921c, #ffa940);
+  background: linear-gradient(90deg, #25bde7, #ffa940);
   transition: width 0.3s;
 }
 
@@ -706,6 +733,11 @@ function dismiss(id) {
 
 .view-all-link:hover {
   color: #e8830f;
+}
+
+.helper-text {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 /* Make card content look like a regular card while being a link */

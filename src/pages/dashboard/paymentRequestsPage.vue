@@ -23,6 +23,7 @@
             <th>Prepared By</th>
             <th>Reviewed By</th>
             <th>Authorised By</th>
+            <th>Invoice</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -35,6 +36,13 @@
             <td>
               <span class="status-badge" :class="getStatusClass(r.status)">
                 {{ r.status }}
+              </span>
+              <span
+                v-if="r.status === 'Rejected'"
+                class="rejection-info"
+                @click="showRejectionDetails(r)"
+              >
+                ℹ️
               </span>
             </td>
             <td>
@@ -58,47 +66,63 @@
               }}
             </td>
 
+            <td>
+              <button
+                v-if="r.invoiceFiles?.length"
+                class="btn-invoice"
+                @click="viewInvoices(r)"
+              >
+                View ({{ r.invoiceFiles.length }})
+              </button>
+              <span v-else>-</span>
+            </td>
+
             <td class="actions-cell">
               <button
                 class="btn actions-toggle"
-                @click="toggleActionMenu(r.id)"
+                @click.stop="toggleActionMenu(r.id)"
+                :disabled="isActionDisabled(r)"
               >
                 &#8942;
               </button>
 
-              <div class="actions-menu" v-if="openActionMenuId === r.id">
-                <button @click="openModal(r.id)" :disabled="isRestricted">
+              <div 
+                class="actions-menu" 
+                v-if="openActionMenuId === r.id"
+                v-click-outside="closeActionMenu"
+              >
+                <button @click="handleEdit(r)" :disabled="!canEdit(r)">
                   Edit
                 </button>
                 <div class="menu-divider"></div>
 
                 <button
                   @click="updateStatus(r, 'Approved')"
-                  :disabled="isApprovalRestricted"
+                  :disabled="!canApprove(r)"
                 >
                   Approve
                 </button>
                 <button
                   @click="updateStatus(r, 'Rejected')"
-                  :disabled="isApprovalRestricted"
+                  :disabled="!canApprove(r)"
                 >
                   Reject
                 </button>
                 <button
                   @click="updateStatus(r, 'Under Review')"
-                  :disabled="isRestricted"
+                  :disabled="!canEdit(r)"
                 >
                   Under Review
                 </button>
                 <button
                   @click="updateStatus(r, 'Pending')"
-                  :disabled="isRestricted"
+                  :disabled="!canEdit(r)"
                 >
                   Pending
                 </button>
                 <button
                   @click="updateStatus(r, 'Paid')"
-                  :disabled="isApprovalRestricted"
+                  :disabled="!canMarkPaid(r)"
                 >
                   Mark Paid
                 </button>
@@ -107,7 +131,7 @@
                 <button
                   class="btn-danger-text"
                   @click="deleteRequest(r.id)"
-                  :disabled="isApprovalRestricted"
+                  :disabled="!canDelete(r)"
                 >
                   Delete
                 </button>
@@ -119,6 +143,15 @@
 
       <p v-else class="no-data">No payment requests yet.</p>
     </section>
+
+    <!-- Invoice Viewer Modal -->
+    <InvoiceViewerModal
+      v-if="selectedRequest && selectedRequest.invoiceFiles?.length"
+      :invoices="selectedRequest.invoiceFiles"
+      :canEdit="canEdit(selectedRequest)"
+      @close="selectedRequest = null"
+      @update:invoices="updateRequestInvoices"
+    />
 
     <!-- New Request Modal -->
     <NewRequestModal
@@ -161,6 +194,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import NewRequestModal from "@/components/request/NewRequestModal.vue";
+import InvoiceViewerModal from "@/components/common/InvoiceViewerModal.vue";
 import { useUsers } from "@/services/useUsers.js";
 import { useCurrency } from "@/services/useCurrency";
 
@@ -178,11 +212,95 @@ const editingRequest = ref(null);
 const showDescriptionModal = ref(false);
 const currentDescription = ref("");
 const openActionMenuId = ref(null);
+const selectedRequest = ref(null);
 
-const isRestricted = computed(() => user.value?.role === "REQUESTER");
-const isApprovalRestricted = computed(() =>
-  ["REQUESTER", "FINANCE MANAGER", "FINANCE OFFICER"].includes(user.value?.role)
-);
+// Custom directive for clicking outside
+const vClickOutside = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = function(event) {
+      if (!el.contains(event.target)) {
+        binding.value(event);
+      }
+    };
+    document.addEventListener('click', el.clickOutsideEvent);
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el.clickOutsideEvent);
+  }
+};
+
+function viewInvoices(request) {
+  selectedRequest.value = request;
+}
+
+function updateRequestInvoices(newInvoices) {
+  if (!selectedRequest.value) return;
+
+  // Update invoices in the selected request
+  selectedRequest.value.invoiceFiles = newInvoices;
+
+  // If we're in edit mode, also update the editing request
+  if (
+    showEditRequestModal.value &&
+    editingRequest.value?.id === selectedRequest.value.id
+  ) {
+    editingRequest.value.invoiceFiles = newInvoices;
+  }
+
+  // Update the request in the main list
+  const idx = requests.value.findIndex(
+    (r) => r.id === selectedRequest.value.id
+  );
+  if (idx !== -1) {
+    requests.value[idx] = { ...requests.value[idx], invoiceFiles: newInvoices };
+  }
+
+  // If no invoices left, close the modal
+  if (!newInvoices.length) {
+    selectedRequest.value = null;
+  }
+}
+
+// Improved permission functions
+const canEdit = (request) => {
+  if (!user.value?.role) return false;
+  if (user.value.role === "REQUESTER") return false;
+  
+  // Cannot edit approved or paid requests
+  const status = request.status?.toUpperCase();
+  return !["APPROVED", "PAID"].includes(status);
+};
+
+const canApprove = (request) => {
+  if (!user.value?.role) return false;
+  if (user.value.role !== "CEO") return false;
+  
+  // Can only approve pending or under review requests
+  const status = request.status?.toUpperCase();
+  return ["PENDING", "UNDER REVIEW"].includes(status);
+};
+
+const canMarkPaid = (request) => {
+  if (!user.value?.role) return false;
+  if (user.value.role !== "CEO") return false;
+  
+  // Can only mark approved requests as paid
+  return request.status?.toUpperCase() === "APPROVED";
+};
+
+const canDelete = (request) => {
+  if (!user.value?.role) return false;
+  if (user.value.role === "REQUESTER") return false;
+  
+  // Cannot delete approved or paid requests
+  const status = request.status?.toUpperCase();
+  return !["APPROVED", "PAID"].includes(status);
+};
+
+const isActionDisabled = (request) => {
+  // Disable action button if no actions are available
+  return !canEdit(request) && !canApprove(request) && !canMarkPaid(request) && !canDelete(request);
+};
 
 function saveRequests() {
   try {
@@ -235,7 +353,7 @@ function nextId() {
 function handleNewRequest(formData) {
   const payload = {
     id: nextId(),
-    project: formData.expenditureType,
+    project: formData.project || formData.expenditureType,
     amount: `${selectedCurrency.value} ${formData.totalAmount.toFixed(2)}`,
     description: formData.items
       .map((item) => `${item.description} (${item.vendor})`)
@@ -247,12 +365,11 @@ function handleNewRequest(formData) {
   showNewRequestModal.value = false;
 }
 
-function openModal(requestId) {
-  const request = requests.value.find((r) => r.id === requestId);
-  if (request) {
-    editingRequest.value = { ...request };
-    showEditRequestModal.value = true;
-  }
+function handleEdit(request) {
+  if (!canEdit(request)) return;
+  editingRequest.value = { ...request };
+  showEditRequestModal.value = true;
+  openActionMenuId.value = null;
 }
 
 function handleUpdateRequest(formData) {
@@ -265,6 +382,9 @@ function handleUpdateRequest(formData) {
 }
 
 function deleteRequest(id) {
+  const request = requests.value.find(r => r.id === id);
+  if (!request || !canDelete(request)) return;
+  
   const idx = requests.value.findIndex((r) => r.id === id);
   if (idx === -1) return;
   if (!confirm("Delete this request?")) return;
@@ -282,13 +402,38 @@ function closeDescriptionModal() {
   currentDescription.value = "";
 }
 
+function showRejectionDetails(request) {
+  const details = `Rejection Reason: ${request.rejectionReason}\nRejected By: ${
+    request.rejectedBy?.name || "Unknown"
+  }\nRejection Date: ${request.rejectedBy?.date || "Unknown"}`;
+  currentDescription.value = details;
+  showDescriptionModal.value = true;
+}
+
 function toggleActionMenu(id) {
   openActionMenuId.value = openActionMenuId.value === id ? null : id;
 }
 
+function closeActionMenu() {
+  openActionMenuId.value = null;
+}
+
 function updateStatus(request, newStatus) {
-  request.status = newStatus;
-  if (newStatus === "Paid") updateBudgetsForPaidRequest(request);
+  if (newStatus === "Rejected") {
+    const rejectionReason = prompt("Please provide a reason for rejection:");
+    if (!rejectionReason) return; // Cancel if no reason provided
+    request.status = newStatus;
+    request.rejectionReason = rejectionReason;
+    request.rejectedBy = {
+      name: user.value?.name || "Unknown",
+      date: new Date().toISOString().split("T")[0],
+    };
+  } else {
+    request.status = newStatus;
+    if (newStatus === "Paid") {
+      updateBudgetsForPaidRequest(request);
+    }
+  }
   openActionMenuId.value = null;
   saveRequests();
 }
@@ -299,12 +444,6 @@ function getStatusClass(status) {
   return `status-${slug}`;
 }
 
-function closeMenuOnClickOutside(event) {
-  if (!event.target.closest(".actions-cell")) {
-    openActionMenuId.value = null;
-  }
-}
-
 function handleStorageChange(event) {
   if (event.key === STORAGE_KEY) loadRequests();
 }
@@ -312,12 +451,10 @@ function handleStorageChange(event) {
 onMounted(() => {
   loadRequests();
   window.addEventListener("storage", handleStorageChange);
-  document.addEventListener("click", closeMenuOnClickOutside);
 });
 
 onUnmounted(() => {
   window.removeEventListener("storage", handleStorageChange);
-  document.removeEventListener("click", closeMenuOnClickOutside);
 });
 </script>
 
@@ -325,7 +462,7 @@ onUnmounted(() => {
 .requests-view {
   padding: 20px;
   font-family: Inter, sans-serif;
-  background-color: #dddddd;
+  background-color: white;
 }
 .subtitle {
   color: #666;
@@ -394,20 +531,36 @@ td {
   color: #374151;
 }
 
+.rejection-info {
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.rejection-info:hover {
+  opacity: 1;
+}
+
 /* Actions menu */
 .actions-cell {
   position: relative;
   width: 40px;
 }
+.actions-toggle {
+  position: relative;
+  z-index: 1;
+}
 .actions-menu {
   position: absolute;
-  right: 20px;
+  right: 0;
   top: 100%;
-  z-index: 10;
+  z-index: 100;
   background: #fff;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 160px;
   padding: 6px;
 }
@@ -420,9 +573,14 @@ td {
   cursor: pointer;
   border-radius: 6px;
   text-align: left;
+  font-size: 0.875rem;
 }
-.actions-menu button:hover {
+.actions-menu button:hover:not(:disabled) {
   background-color: #f3f4f6;
+}
+.actions-menu button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .menu-divider {
   height: 1px;
@@ -431,6 +589,21 @@ td {
 }
 .btn-danger-text {
   color: #dc2626;
+}
+
+.btn-invoice {
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.btn-invoice:hover {
+  background-color: #2563eb;
 }
 
 /* Description Modal */

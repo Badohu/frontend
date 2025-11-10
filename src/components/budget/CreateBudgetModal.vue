@@ -5,18 +5,41 @@
       <form @submit.prevent="handleSave">
         <div class="form-group">
           <label for="project-select">Project</label>
-          <select v-model="selectedProject" id="project-select" required>
+          <select
+            v-model="selectedProject"
+            id="project-select"
+            required
+            :disabled="isFinanceOfficer"
+          >
             <option disabled value="">Please select a project</option>
-            <optgroup v-for="(projects, category) in projectsByCategory" :label="category" :key="category">
-              <option v-for="project in projects" :key="project.id" :value="project.id">
+            <optgroup
+              v-for="(projects, category) in projectsByCategory"
+              :label="category"
+              :key="category"
+            >
+              <option
+                v-for="project in projects"
+                :key="project.id"
+                :value="project.id"
+              >
                 {{ project.name }}
               </option>
             </optgroup>
           </select>
+          <small v-if="isFinanceOfficer" class="error-text"
+            >Finance Officers cannot allocate budgets</small
+          >
         </div>
         <div class="form-group">
           <label for="budget-amount">Amount</label>
-          <input v-model.number="amount" id="budget-amount" type="number" min="0" required />
+          <input
+            v-model.number="amount"
+            id="budget-amount"
+            type="number"
+            min="0"
+            required
+            :disabled="isFinanceOfficer"
+          />
         </div>
         <div class="modal-actions">
           <button type="button" @click="$emit('close')">Cancel</button>
@@ -28,19 +51,23 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useProjects } from '@/services/useProjects';
+import { ref, computed } from "vue";
+import { useProjects } from "@/services/useProjects";
+import { useUsers } from "@/services/useUsers";
 
 const { projects } = useProjects();
+const { user } = useUsers();
 
-const selectedProject = ref('');
+const selectedProject = ref("");
 const amount = ref(0);
 
-const emit = defineEmits(['close', 'save']);
+const emit = defineEmits(["close", "save"]);
+
+const isFinanceOfficer = computed(() => user.value?.role === "FINANCE OFFICER");
 
 const projectsByCategory = computed(() => {
   const grouped = {};
-  projects.value.forEach(p => {
+  projects.value.forEach((p) => {
     if (!grouped[p.category]) {
       grouped[p.category] = [];
     }
@@ -51,9 +78,14 @@ const projectsByCategory = computed(() => {
 
 function handleSave() {
   if (!selectedProject.value || amount.value <= 0) return;
-  const project = projects.value.find(p => p.id === selectedProject.value);
+  // Prevent Finance Officers from allocating budgets
+  if (user.value?.role === "FINANCE OFFICER") {
+    alert("Finance Officers are not authorized to allocate budgets.");
+    return;
+  }
+  const project = projects.value.find((p) => p.id === selectedProject.value);
   if (project) {
-    emit('save', { ...project, budget: amount.value });
+    emit("save", { ...project, budget: amount.value });
   }
 }
 </script>
@@ -100,5 +132,12 @@ function handleSave() {
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 2rem;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 </style>

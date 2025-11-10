@@ -97,7 +97,8 @@ export function useProjects() {
 
   function createProject(projectData) {
     try {
-      const allProjects = safeJSONParse(localStorage.getItem(PROJECTS_STORAGE_KEY)) || [];
+      const allProjects =
+        safeJSONParse(localStorage.getItem(PROJECTS_STORAGE_KEY)) || [];
       const newProject = {
         id: Date.now(), // Simple unique ID
         ...projectData,
@@ -114,8 +115,19 @@ export function useProjects() {
 
   function deleteProject(projectId) {
     try {
-      let allProjects = safeJSONParse(localStorage.getItem(PROJECTS_STORAGE_KEY)) || [];
-      allProjects = allProjects.filter(p => p.id !== projectId);
+      // Role check: only CEO and FINANCE MANAGER can delete projects
+      const userData = safeJSONParse(localStorage.getItem("user")) || {};
+      const role = (userData.role || "").toString().toUpperCase();
+      const allowedRoles = ["CEO", "FINANCE MANAGER"];
+      if (!allowedRoles.includes(role)) {
+        // prevent deletion and notify the user
+        alert("Only CEO and Finance Manager can delete projects.");
+        return;
+      }
+
+      let allProjects =
+        safeJSONParse(localStorage.getItem(PROJECTS_STORAGE_KEY)) || [];
+      allProjects = allProjects.filter((p) => p.id !== projectId);
       localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(allProjects));
       loadProjects(); // Reload projects
     } catch (e) {

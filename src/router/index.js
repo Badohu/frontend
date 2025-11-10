@@ -76,6 +76,15 @@ router.beforeEach((to, from, next) => {
     if (!user) {
       next({ name: "Login" });
     } else {
+      // Restrict access to the Budgets page to only specific roles
+      if (to.name === "Budgets") {
+        const role = (user.role || "").toString().toUpperCase();
+        const allowedRoles = ["CEO", "HR", "FINANCE MANAGER"];
+        if (!allowedRoles.includes(role)) {
+          return next({ name: "Overview" });
+        }
+      }
+
       const allowedSections = user.allowedSections || [];
       const normalizedAllowed = allowedSections.map((section) =>
         section.toLowerCase()

@@ -44,8 +44,6 @@
           <option value="HR">HR</option>
           <option value="FINANCE MANAGER">Finance Manager</option>
           <option value="FINANCE OFFICER">Finance Officer</option>
-          <!-- <option value="INTERN">Intern</option>
-          <option value="EMPLOYEE">Employee</option> -->
         </select>
       </div>
     </div>
@@ -192,6 +190,7 @@
                   v-model="userForm.department"
                   required
                   class="form-select"
+                  @change="onDepartmentChange"
                 >
                   <option value="" disabled>Select department</option>
                   <option v-for="dept in departments" :key="dept">
@@ -202,15 +201,26 @@
 
               <div class="form-group">
                 <label>Role <span class="required">*</span></label>
-                <select v-model="userForm.role" required class="form-select">
-                  <option value="" disabled>Select role</option>
-                  <option value="CEO">CEO</option>
-                  <option value="HR">HR</option>
-                  <option value="FINANCE MANAGER">FINANCE MANAGER</option>
-                  <option value="FINANCE OFFICER">FINANCE OFFICER</option>
-                  <!-- <option value="INTERN">Intern</option>
-                  <option value="EMPLOYEE">Employee</option> -->
+                <select 
+                  v-model="userForm.role" 
+                  required 
+                  class="form-select"
+                  :disabled="!userForm.department"
+                >
+                  <option value="" disabled>
+                    {{ userForm.department ? 'Select role' : 'Select department first' }}
+                  </option>
+                  <option 
+                    v-for="role in availableRoles" 
+                    :key="role.value"
+                    :value="role.value"
+                  >
+                    {{ role.label }}
+                  </option>
                 </select>
+                <span class="form-hint" v-if="!userForm.department">
+                  Please select a department first
+                </span>
               </div>
             </div>
 
@@ -246,7 +256,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from "vue";
+import { ref, computed, reactive, watch } from "vue";
 import { useUsers } from "@/services/useUsers";
 import { useDepartments } from "@/services/useDepartments";
 
@@ -269,8 +279,58 @@ const userForm = reactive({
   password: "",
 });
 
-// Departments are loaded from the departments service (created on the Departments page)
+// Define role mappings for each department
+const departmentRoleMap = {
+  'Finance': [
+    { value: 'FINANCE MANAGER', label: 'Finance Manager' },
+    { value: 'FINANCE OFFICER', label: 'Finance Officer' }
+  ],
+  'Human Resources': [
+    { value: 'HR', label: 'HR Manager' },
+    { value: 'HR OFFICER', label: 'HR Officer' }
+  ],
+  'Executive': [
+    { value: 'CEO', label: 'CEO' }
+  ],
+  'IT': [
+    { value: 'IT MANAGER', label: 'IT Manager' },
+    { value: 'IT OFFICER', label: 'IT Officer' }
+  ],
+  'Operations': [
+    { value: 'OPERATIONS MANAGER', label: 'Operations Manager' },
+    { value: 'OPERATIONS OFFICER', label: 'Operations Officer' }
+  ],
+  'Marketing': [
+    { value: 'MARKETING MANAGER', label: 'Marketing Manager' },
+    { value: 'MARKETING OFFICER', label: 'Marketing Officer' }
+  ],
+  'Sales': [
+    { value: 'SALES MANAGER', label: 'Sales Manager' },
+    { value: 'SALES OFFICER', label: 'Sales Officer' }
+  ]
+};
+
+// Departments are loaded from the departments service
 const departments = computed(() => deptList.value.map((d) => d.name));
+
+// Compute available roles based on selected department
+const availableRoles = computed(() => {
+  if (!userForm.department) {
+    return [];
+  }
+  return departmentRoleMap[userForm.department] || [];
+});
+
+// Watch for department changes and reset role if it's not valid for the new department
+watch(() => userForm.department, (newDept, oldDept) => {
+  if (newDept !== oldDept && userForm.role) {
+    const validRoles = departmentRoleMap[newDept] || [];
+    const isRoleValid = validRoles.some(role => role.value === userForm.role);
+    if (!isRoleValid) {
+      userForm.role = '';
+    }
+  }
+});
 
 const filteredUsers = computed(() => {
   return users.value.filter((user) => {
@@ -307,8 +367,6 @@ function getRoleClass(role) {
     HR: "role-hr",
     "FINANCE MANAGER": "role-manager",
     "FINANCE OFFICER": "role-officer",
-    // INTERN: "role-intern",
-    // EMPLOYEE: "role-employee",
   };
   return roleClasses[role] || "";
 }
@@ -332,6 +390,15 @@ function openUserModal(user = null) {
 function closeModal() {
   showModal.value = false;
   editingUser.value = null;
+}
+
+function onDepartmentChange() {
+  // Reset role when department changes
+  const validRoles = departmentRoleMap[userForm.department] || [];
+  const isRoleValid = validRoles.some(role => role.value === userForm.role);
+  if (!isRoleValid) {
+    userForm.role = '';
+  }
 }
 
 function saveUser() {
@@ -389,7 +456,7 @@ function bulkDelete() {
 
 .users-page {
   padding: 2rem;
-  background-color: #dddddd;
+  background-color: white;
   min-height: 100vh;
 }
 
@@ -635,16 +702,6 @@ th {
   color: #166534;
 }
 
-.role-intern {
-  background: #f3e8ff;
-  color: #6b21a8;
-}
-
-.role-employee {
-  background: #f3f4f6;
-  color: #374151;
-}
-
 .status-badge {
   display: inline-block;
   padding: 0.375rem 0.875rem;
@@ -876,6 +933,12 @@ th {
   outline: none;
   border-color: #f7921c;
   box-shadow: 0 0 0 3px rgba(247, 146, 28, 0.1);
+}
+
+.form-select:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 
 .form-hint {

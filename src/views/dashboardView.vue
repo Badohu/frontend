@@ -10,7 +10,7 @@
   display: grid;
   grid-template-columns: 15vw 1fr;
   height: 100%;
-  background-color: #ddd;
+  background-color: white;
 }
 </style>
 

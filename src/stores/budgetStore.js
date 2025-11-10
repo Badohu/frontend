@@ -22,6 +22,21 @@ export const useBudgetStore = defineStore("budgetStore", () => {
 
   // Add new budget
   const addBudget = (budget) => {
+    // Restrict adding budgets to a single role (FINANCE MANAGER)
+    try {
+      const rawUser = localStorage.getItem("user");
+      const userData = rawUser ? JSON.parse(rawUser) : null;
+      const role = (userData?.role || "").toString().toUpperCase();
+      const allowedRoles = ["FINANCE MANAGER"];
+      if (!allowedRoles.includes(role)) {
+        alert("Only Finance Manager can add budgets.");
+        return;
+      }
+    } catch (e) {
+      console.warn("Could not verify user role before adding budget", e);
+      return;
+    }
+
     budgets.value.push({
       id: Date.now(),
       name: budget.name,
@@ -33,6 +48,21 @@ export const useBudgetStore = defineStore("budgetStore", () => {
 
   // Delete existing budget
   const deleteBudget = (id) => {
+    // Role check: only CEO and FINANCE MANAGER can delete budgets
+    try {
+      const rawUser = localStorage.getItem("user");
+      const userData = rawUser ? JSON.parse(rawUser) : null;
+      const role = (userData?.role || "").toString().toUpperCase();
+      const allowedRoles = ["FINANCE MANAGER"];
+      if (!allowedRoles.includes(role)) {
+        alert("Only Finance Manager can delete budgets.");
+        return;
+      }
+    } catch (e) {
+      console.warn("Could not verify user role before deleting budget", e);
+      return;
+    }
+
     budgets.value = budgets.value.filter((b) => b.id !== id);
   };
 
